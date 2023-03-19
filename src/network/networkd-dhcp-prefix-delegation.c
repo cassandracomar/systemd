@@ -130,9 +130,9 @@ static int dhcp_pd_get_assigned_subnet_prefix(Link *link, const struct in6_addr 
         if (link->network->dhcp_pd_assign) {
                 Address *address;
 
-                uint8_t subnet_prefix_len = 64;
+                uint8_t subnet_prefixlen = 64;
                 if (link->network->dhcp6_pd_prefix_length >= pd_prefix_len)
-                        subnet_prefix_len = link->network->dhcp6_pd_prefix_length;
+                        subnet_prefixlen = link->network->dhcp6_pd_prefix_length;
 
                 SET_FOREACH(address, link->addresses) {
                         if (address->source != NETWORK_CONFIG_SOURCE_DHCP_PD)
@@ -145,7 +145,7 @@ static int dhcp_pd_get_assigned_subnet_prefix(Link *link, const struct in6_addr 
                         if (ret) {
                                 struct in6_addr prefix = address->in_addr.in6;
 
-                                in6_addr_mask(&prefix, subnet_prefix_len);
+                                in6_addr_mask(&prefix, subnet_prefixlen);
                                 *ret = prefix;
                         }
                         return 0;
@@ -568,7 +568,7 @@ static int dhcp_pd_assign_subnet_prefix(
                 return log_link_warning_errno(link, r,
                                               "Failed to assign/update route for prefix %s: %m", pretty);
 
-        r = dhcp_pd_request_address(link, &prefix, subnet_prefix_len, lifetime_preferred_usec, lifetime_valid_usec);
+        r = dhcp_pd_request_address(link, &prefix, 64, lifetime_preferred_usec, lifetime_valid_usec);
         if (r < 0)
                 return log_link_warning_errno(link, r,
                                               "Failed to assign/update address for prefix %s: %m", pretty);
