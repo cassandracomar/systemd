@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: LGPL-2.1-or-later */
 
 #include <linux/ipv6_route.h>
+#include <stdint.h>
 
 #include "sd-dhcp6-client.h"
 
@@ -568,10 +569,13 @@ static int dhcp_pd_assign_subnet_prefix(
                 return log_link_warning_errno(link, r,
                                               "Failed to assign/update route for prefix %s: %m", pretty);
 
-        r = dhcp_pd_request_address(link, &prefix, 64, lifetime_preferred_usec, lifetime_valid_usec);
-        if (r < 0)
-                return log_link_warning_errno(link, r,
-                                              "Failed to assign/update address for prefix %s: %m", pretty);
+        uint64_t i;
+        for (i=0; ++i < UINT64_C(1) << (64-subnet_prefix_len);) {
+                r = dhcp_pd_request_address(link, &prefix, 64, lifetime_preferred_usec, lifetime_valid_usec);
+                if (r < 0)
+                        return log_link_warning_errno(
+                                        link, r, "Failed to assign/update address for prefix %s: %m", pretty);
+        }
 
         log_link_debug(link, "Assigned prefix %s", pretty);
         return 1;
