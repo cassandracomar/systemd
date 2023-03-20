@@ -574,7 +574,9 @@ static int dhcp_pd_assign_subnet_prefix(
         uint64_t i;
         for (i=0; ++i < UINT64_C(1) << (64 - subnet_prefix_len);) {
                 struct in6_addr *address = newdup(struct in6_addr, &prefix, 1);
-                address->s6_addr32[3] |= i << subnet_prefix_len;
+                if (subnet_prefix_len < 32)
+                        prefix.s6_addr32[0] |= htobe32(i >> 32);
+                address->s6_addr32[1] |= htobe32(i & 0xffffffff);
 
                 r = dhcp_pd_request_address(link, address, 64, lifetime_preferred_usec, lifetime_valid_usec);
                 if (r < 0)
