@@ -3,8 +3,6 @@
 #include <linux/ipv6_route.h>
 #include <stdint.h>
 
-#include "endian.h"
-#include "log-link.h"
 #include "sd-dhcp6-client.h"
 
 #include "hashmap.h"
@@ -574,6 +572,7 @@ static int dhcp_pd_assign_subnet_prefix(
         uint64_t i;
         for (i=0; ++i < UINT64_C(1) << (64 - subnet_prefix_len);) {
                 struct in6_addr *address = newdup(struct in6_addr, &prefix, 1);
+                in6_addr_mask(address, subnet_prefix_len);
                 if (subnet_prefix_len < 32)
                         prefix.s6_addr32[0] |= htobe32(i >> 32);
                 address->s6_addr32[1] |= htobe32(i & 0xffffffff);
